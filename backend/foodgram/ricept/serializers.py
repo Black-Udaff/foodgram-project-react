@@ -1,16 +1,26 @@
+import base64
 from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from django.core.files.base import ContentFile
 from rest_framework.relations import SlugRelatedField
 import webcolors
 
-from .models import Tag, Ingredient
+from .models import Tag, Ingredient, Recipe
 
 
 User = get_user_model()
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
 
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
 # class Hex2NameColor(serializers.Field):
 #     def to_representation(self, value):
 #         return value
@@ -35,3 +45,45 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = '__all__'
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    # genre = serializers.SlugRelatedField(
+    #     many=True, slug_field='slug', queryset=Genre.objects.all()
+    # )
+    # category = SlugRelatedField(
+    #     slug_field='slug', queryset=Category.objects.all()
+    # )
+    # description = serializers.CharField(required=False, allow_blank=True)
+    # rating = serializers.FloatField(read_only=True)
+    image = Base64ImageField(required=False, allow_null=True)
+    author = SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+    )
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+        
+
+    # def to_representation(self, instance):
+    #     representation = super(TitleSerializer, self).to_representation(
+    #         instance
+    #     )
+
+    #     representation['genre'] = GenreSerializer(
+    #         instance.genre.all(), many=True
+    #     ).data
+
+    #     if instance.category:
+    #         representation['category'] = CategorySerializer(
+    #             instance.category
+    #         ).data
+
+        # return representation
+
+    # def validate_year(self, value):
+    #     print(datetime.now().year)
+    #     if value > datetime.now().year:
+    #         raise serializers.ValidationError('произведение еще не вышло')
+    #     return value

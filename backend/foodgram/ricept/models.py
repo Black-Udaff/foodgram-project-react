@@ -32,7 +32,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=128)
-    description = models.TextField('Описание')
+    text = models.TextField('Описание')
     cooking_time = models.PositiveIntegerField(
         'Время готовки',
         validators=[
