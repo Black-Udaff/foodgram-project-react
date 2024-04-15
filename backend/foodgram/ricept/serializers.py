@@ -7,7 +7,7 @@ from django.core.files.base import ContentFile
 from rest_framework.relations import SlugRelatedField
 import webcolors
 
-from .models import Tag, Ingredient, Recipe
+from .models import Tag, Ingredient, Recipe, Ingredient_Recipe
 
 
 User = get_user_model()
@@ -46,6 +46,23 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = '__all__'
 
+class IngredientRecipeSerializer(serializers.ModelSerializer):
+    ingredient_id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), source='ingredient')
+
+    class Meta:
+        model = Ingredient_Recipe
+        fields = ('ingredient_id', 'amount')
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ("email",
+                  "id",
+                  "username",
+                  "first_name",
+                  "last_name"
+        )
 
 class RecipeSerializer(serializers.ModelSerializer):
     # genre = serializers.SlugRelatedField(
@@ -56,7 +73,14 @@ class RecipeSerializer(serializers.ModelSerializer):
     # )
     # description = serializers.CharField(required=False, allow_blank=True)
     # rating = serializers.FloatField(read_only=True)
+    # tags = serializers.SlugRelatedField(
+    #     many=True,
+    #     slug_field='slug',
+    #     queryset=Tag.objects.all()
+    # )
+    # ingredients = IngredientRecipeSerializer(many=True, source='ingredient_recipe_set')
     image = Base64ImageField(required=False, allow_null=True)
+    tags = TagSerializer(many=True, read_only=True)
     author = SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -66,21 +90,19 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
-    # def to_representation(self, instance):
-    #     representation = super(TitleSerializer, self).to_representation(
-    #         instance
-    #     )
+    def to_representation(self, instance):
+        representation = super(RecipeSerializer, self).to_representation(
+            instance
+        )
 
-    #     representation['genre'] = GenreSerializer(
-    #         instance.genre.all(), many=True
-    #     ).data
+        representation['author'] = UserSerializer(instance.author).data
 
     #     if instance.category:
     #         representation['category'] = CategorySerializer(
     #             instance.category
     #         ).data
 
-        # return representation
+        return representation
 
     # def validate_year(self, value):
     #     print(datetime.now().year)
