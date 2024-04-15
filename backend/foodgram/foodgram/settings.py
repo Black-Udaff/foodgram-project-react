@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-j6bjl-068pmrbt(-0-*h=$=+g_a!=$@6i=_+!in!ca!i5=$3p$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'users',
+    'ricept',
     "corsheaders",
 ]
 
