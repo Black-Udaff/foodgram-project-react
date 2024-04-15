@@ -11,10 +11,24 @@ class Ingredient(models.Model):
     name = models.CharField('Название', max_length=128)
     measurement_unit = models.CharField('Единица измерения', max_length=12)
 
+    class Meta:
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
+
 class Tag(models.Model):
     name = models.CharField('Имя', max_length=128, unique=True)
     color = models.CharField(max_length=16, unique=True)
     slug = models.SlugField('Слаг', max_length=25, unique=True)
+
+    class Meta:
+        verbose_name = 'тэг'
+        verbose_name_plural = 'Тэги'
+
+    def __str__(self):
+        return self.name
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=128)

@@ -11,20 +11,27 @@ from .models import Tag, Ingredient
 User = get_user_model()
 
 
-class Hex2NameColor(serializers.Field):
-    def to_representation(self, value):
-        return value
+# class Hex2NameColor(serializers.Field):
+#     def to_representation(self, value):
+#         return value
 
-    def to_internal_value(self, data):
-        try:
-            data = webcolors.hex_to_name(data)
-        except ValueError:
-            raise serializers.ValidationError('Для этого цвета нет имени')
-        return data
+#     def to_internal_value(self, data):
+#         try:
+#             data = webcolors.hex_to_name(data)
+#         except ValueError:
+#             raise serializers.ValidationError('Для этого цвета нет имени')
+#         return data
 
 
 class TagSerializer(serializers.ModelSerializer):
-    color = Hex2NameColor()
+    # color = Hex2NameColor()
     class Meta:
         model = Tag
-        fields = ['name', 'color', 'slug']
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    # color = Hex2NameColor()
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
