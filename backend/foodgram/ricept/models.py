@@ -67,13 +67,13 @@ class Recipe(models.Model):
     
 
 class Ingredient_Recipe(models.Model):
-    recipe_id = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='recipe',
         verbose_name='Рецепт',
     )
-    ingredient_id = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name='ingredient',

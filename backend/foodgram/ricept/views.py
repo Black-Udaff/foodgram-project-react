@@ -2,6 +2,7 @@ from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
+    RetrieveModelMixin,
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.filters import SearchFilter
@@ -12,14 +13,14 @@ from .filters import IngredientFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
-class TagViewSet(ListModelMixin, GenericViewSet):
+class TagViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class IngredientViewSet(ListModelMixin, GenericViewSet):
+class IngredientViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None

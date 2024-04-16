@@ -73,14 +73,14 @@ class RecipeSerializer(serializers.ModelSerializer):
     # )
     # description = serializers.CharField(required=False, allow_blank=True)
     # rating = serializers.FloatField(read_only=True)
-    # tags = serializers.SlugRelatedField(
-    #     many=True,
-    #     slug_field='slug',
-    #     queryset=Tag.objects.all()
-    # )
+    tags = serializers.SlugRelatedField(
+        many=True,
+        slug_field='id',
+        queryset=Tag.objects.all()
+    )
     # ingredients = IngredientRecipeSerializer(many=True, source='ingredient_recipe_set')
     image = Base64ImageField(required=False, allow_null=True)
-    tags = TagSerializer(many=True, read_only=True)
+    # tags = TagSerializer(many=True, read_only=True)
     author = SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -98,11 +98,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation['author'] = UserSerializer(instance.author).data
 
     #     if instance.category:
-    #         representation['category'] = CategorySerializer(
-    #             instance.category
-    #         ).data
+        representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
 
         return representation
+    
+
+    # def create(self, validated_data):
+    #     ingredients_data = validated_data.pop('ingredient_recipe_set')
+    #     recipe = Recipe.objects.create(**validated_data)
+    #     for ingredient_data in ingredients_data:
+    #         Ingredient_Recipe.objects.create(recipe=recipe, **ingredient_data)
+    #     return recipe
 
     # def validate_year(self, value):
     #     print(datetime.now().year)
