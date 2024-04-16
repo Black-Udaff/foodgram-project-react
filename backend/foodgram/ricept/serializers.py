@@ -42,16 +42,33 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     # color = Hex2NameColor()
+    name =  serializers.CharField(read_only=True,)
+    measurement_unit =  serializers.CharField(read_only=True,)
     class Meta:
         model = Ingredient
         fields = '__all__'
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
-    ingredient_id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), source='ingredient')
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(), source='ingredient', write_only=True
+    )
+    amount = serializers.IntegerField()
 
     class Meta:
         model = Ingredient_Recipe
-        fields = ('ingredient_id', 'amount')
+        fields = ('id', 'amount')
+
+
+    def to_representation(self, instance):
+        representation = super(IngredientRecipeSerializer, self).to_representation(instance)
+        ingredient_representation = representation.pop('ingredient')
+        # Объединяем данные ингредиента с данными количества в один словарь
+        return {
+            "id": ingredient_representation['id'],
+            "name": ingredient_representation['name'],
+            "measurement_unit": ingredient_representation['measurement_unit'],
+            "amount": representation['amount']
+        }
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -65,22 +82,12 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 class RecipeSerializer(serializers.ModelSerializer):
-    # genre = serializers.SlugRelatedField(
-    #     many=True, slug_field='slug', queryset=Genre.objects.all()
-    # )
-    # category = SlugRelatedField(
-    #     slug_field='slug', queryset=Category.objects.all()
-    # )
-    # description = serializers.CharField(required=False, allow_blank=True)
-    # rating = serializers.FloatField(read_only=True)
-    tags = serializers.SlugRelatedField(
+    tags = serializers.PrimaryKeyRelatedField(
         many=True,
-        slug_field='id',
         queryset=Tag.objects.all()
     )
-    # ingredients = IngredientRecipeSerializer(many=True, source='ingredient_recipe_set')
+    ingredients = IngredientRecipeSerializer(many=True, )
     image = Base64ImageField(required=False, allow_null=True)
-    # tags = TagSerializer(many=True, read_only=True)
     author = SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -100,15 +107,32 @@ class RecipeSerializer(serializers.ModelSerializer):
     #     if instance.category:
         representation['tags'] = TagSerializer(instance.tags.all(), many=True).data
 
+        representation['ingredients'] = '1'
+
+
         return representation
     
 
-    # def create(self, validated_data):
-    #     ingredients_data = validated_data.pop('ingredient_recipe_set')
-    #     recipe = Recipe.objects.create(**validated_data)
-    #     for ingredient_data in ingredients_data:
-    #         Ingredient_Recipe.objects.create(recipe=recipe, **ingredient_data)
-    #     return recipe
+
+
+    def create(self, validated_data):
+        print(validated_data)
+        tags_data = validated_data.pop('tags', [])
+        ingredients_data = validated_data.pop('ingredients', [])
+        recipe = Recipe.objects.create(**validated_data)
+        print(ingredients_data)
+        recipe.tags.set(tags_data)  # Set the tags using the set method
+
+        for ingredient_data in ingredients_data:
+            print(ingredient_data)
+            Ingredient_Recipe.objects.create(
+                recipe=recipe,
+                ingredient=ingredient_data['ingredient'],  # Ensure your model and serializer handle this correctly
+                amount=ingredient_data['amount']
+        )
+
+        return recipe
+            
 
     # def validate_year(self, value):
     #     print(datetime.now().year)
