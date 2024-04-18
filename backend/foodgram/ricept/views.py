@@ -10,7 +10,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Tag, Ingredient, Recipe
 from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
 from .filters import IngredientFilter
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class TagViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -43,3 +46,24 @@ class RecipeViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user,)
+
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    def favorite(self, request, pk=None):
+        recipe = self.get_object()
+        if request.method == 'POST':
+            recipe.favorites.add(request.user)
+            return Response({'status': 'recipe added to favorites'}, status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            recipe.favorites.remove(request.user)
+            return Response({'status': 'recipe removed from favorites'}, status=status.HTTP_204_NO_CONTENT)
+        
+
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    def shopping_cart(self, request, pk=None):
+        recipe = self.get_object()
+        if request.method == 'POST':
+            recipe.shopping_cart.add(request.user)
+            return Response({'status': 'recipe added to shopping_cart'}, status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            recipe.shopping_cart.remove(request.user)
+            return Response({'status': 'recipe removed from shopping_cart'}, status=status.HTTP_204_NO_CONTENT)

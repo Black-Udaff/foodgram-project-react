@@ -57,6 +57,8 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,  verbose_name='Ингредиент'
     )
+    favorites = models.ManyToManyField(User, related_name='favorite_recipes', blank=True)
+    shopping_cart = models.ManyToManyField(User, related_name='shoping_recipes', blank=True)
 
     class Meta:
         verbose_name = 'рецепт'
