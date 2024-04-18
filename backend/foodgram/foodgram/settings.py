@@ -146,6 +146,8 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'users.serializers.CustomUserCreateSerializer',
+        'user': 'ricept.serializers.UserSerializer',
+        'current_user': 'ricept.serializers.UserSerializer',
     }
     
 }

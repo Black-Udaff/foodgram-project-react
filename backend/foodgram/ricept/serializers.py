@@ -5,9 +5,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from django.core.files.base import ContentFile
 from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 import webcolors
 
-from .models import Tag, Ingredient, Recipe, Ingredient_Recipe
+from .models import Tag, Ingredient, Recipe, Ingredient_Recipe, Subscription
 
 
 User = get_user_model()
@@ -21,20 +22,9 @@ class Base64ImageField(serializers.ImageField):
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
 
         return super().to_internal_value(data)
-# class Hex2NameColor(serializers.Field):
-#     def to_representation(self, value):
-#         return value
-
-#     def to_internal_value(self, data):
-#         try:
-#             data = webcolors.hex_to_name(data)
-#         except ValueError:
-#             raise serializers.ValidationError('Для этого цвета нет имени')
-#         return data
 
 
 class TagSerializer(serializers.ModelSerializer):
-    # color = Hex2NameColor()
     class Meta:
         model = Tag
         fields = '__all__'
@@ -146,3 +136,24 @@ class RecipeSerializer(serializers.ModelSerializer):
     #     if value > datetime.now().year:
     #         raise serializers.ValidationError('произведение еще не вышло')
     #     return value
+
+
+# class FollowSerializer(serializers.ModelSerializer):
+#     user = serializers.SlugRelatedField(
+#         slug_field='username',
+#         queryset=User.objects.all(),
+#         default=serializers.CurrentUserDefault())
+#     following = serializers.SlugRelatedField(
+#         slug_field='username',
+#         queryset=User.objects.all())
+
+#     class Meta:
+#         model = Follow
+#         fields = '__all__'
+#         validators = (
+#             UniqueTogetherValidator(
+#                 queryset=Follow.objects.all(),
+#                 fields=('user', 'following'),
+#                 message=('Подписка на автора оформлена ранее!')
+#             ),
+#         )

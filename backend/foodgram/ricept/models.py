@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
-
+from django.utils import timezone
 User = get_user_model()
 
 
@@ -86,3 +86,26 @@ class Ingredient_Recipe(models.Model):
     class Meta:
         verbose_name = 'Связь жанра и произведения'
         verbose_name_plural = 'Связи жанров и произведений'
+
+
+class Subscription(models.Model):
+    subscriber = models.ForeignKey(
+        User,
+        related_name='following',  # Пользователь, который подписывается
+        on_delete=models.CASCADE
+    )
+    subscribed_to = models.ForeignKey(
+        User,
+        related_name='followers',  # Пользователь, на которого подписываются
+        on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(default=timezone.now)  # Дата и время создания подписки
+
+    class Meta:
+        unique_together = ('subscriber', 'subscribed_to')  # Гарантируем уникальность подписок
+        indexes = [
+            models.Index(fields=['subscriber', 'subscribed_to'], name='subscription_idx')
+        ]
+
+    def __str__(self):
+        return f"{self.subscriber.username} is subscribed to {self.subscribed_to.username}"
