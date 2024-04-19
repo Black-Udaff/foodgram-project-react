@@ -94,6 +94,8 @@ class RecipeViewSet(ModelViewSet):
 #         serializer.save(user=self.request.user)
 
 class CustomUserViewSet(DjoserUserViewSet):
+
+    
     @action(detail=True, methods=['post', 'delete'], url_path='subscribe', permission_classes=[IsAuthenticated])
     def subscribe(self, request, *args, **pk):
         print(pk)

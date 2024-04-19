@@ -50,15 +50,25 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 class UserSerializer(serializers.ModelSerializer):
-
+    is_subscribed = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ("email",
                   "id",
                   "username",
                   "first_name",
-                  "last_name"
+                  "last_name",
+                  "is_subscribed",
         )
+
+    def get_is_subscribed(self, obj):
+        print(obj)
+        print(self)
+        # Проверка, аутентифицирован ли пользователь и добавлен ли рецепт в избранное
+        user = self.request
+        if user.is_authenticated:
+            return Subscription.objects.filter(subscriber=user, subscribed_to=obj).exists()
+        return False
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
