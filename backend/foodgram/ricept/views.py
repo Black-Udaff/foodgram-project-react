@@ -21,6 +21,8 @@ from rest_framework.exceptions import ValidationError
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django.db.models import Prefetch
 from django.contrib.auth import get_user_model
+from djoser.permissions import CurrentUserOrAdmin
+from .permissions import IsAuthor
 
 
 User = get_user_model()
@@ -52,7 +54,7 @@ class RecipeViewSet(ModelViewSet):
         'patch',
         'delete',
     ]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = (IsAuthenticatedOrReadOnly | IsAuthor,)
     # permission_classes = (IsAuthor | IsModerator | IsAdmin,)
 
     def get_queryset(self):
@@ -62,7 +64,20 @@ class RecipeViewSet(ModelViewSet):
             queryset = filterset.qs
         return queryset
     
+    # def update(self, request, *args, **kwargs):
+    #     # Сохраняем оригинальные разрешения
+    #     original_permissions = self.permission_classes
 
+    #     # Устанавливаем специфичные разрешения для метода update
+    #     self.permission_classes = [CurrentUserOrAdmin]
+
+    #     # Вызываем родительскую реализацию метода update
+    #     response = super().update(request, *args, **kwargs)
+
+    #     # Восстанавливаем оригинальные разрешения
+    #     self.permission_classes = original_permissions
+
+    #     return response
     def perform_create(self, serializer):
         serializer.save(author=self.request.user,)
 
