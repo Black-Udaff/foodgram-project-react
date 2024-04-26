@@ -1,20 +1,19 @@
-from datetime import timedelta
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j6bjl-068pmrbt(-0-*h=$=+g_a!=$@6i=_+!in!ca!i5=$3p$'
+SECRET_KEY = os.getenv("SECRET_KEY", 'key')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
 
 
 # Application definition
@@ -33,7 +32,6 @@ INSTALLED_APPS = [
     'users',
     'ricept',
     "corsheaders",
-    
 ]
 
 MIDDLEWARE = [
@@ -72,13 +70,24 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        # Меняем настройку Django: теперь для работы будет использоваться
+        # бэкенд postgresql
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "django"),
+        "USER": os.getenv("POSTGRES_USER", "django"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", ""),
+        "PORT": os.getenv("DB_PORT", 5432),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -115,6 +124,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -143,13 +156,13 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = r'^/api/.*$' 
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_URLS_REGEX = r'^/api/.*$'
+CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
@@ -158,12 +171,12 @@ DJOSER = {
         'user': 'ricept.serializers.UserSerializer',
         'current_user': 'ricept.serializers.UserSerializer',
     },
-    
-        'PERMISSIONS': {
+
+    'PERMISSIONS': {
         'user': ['rest_framework.permissions.AllowAny'],
         'user_list': ['rest_framework.permissions.AllowAny'],
-        
+
     },
     'HIDE_USERS': False,
-    
+
 }
