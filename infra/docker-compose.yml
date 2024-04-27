@@ -1,44 +1,38 @@
-version: '3.3'
+# Файл docker-compose.yml
+version: '3'
 
 volumes:
-  postgres_data:
-  static_volume:
-  media_volume:
+  pg_data_new:
+  # Новый volume — для статических файлов
+  static_new:
+  media_new:
 
 services:
   db:
-    image: postgres:13
-    environment:
-      - POSTGRES_PASSWORD=supersecretpassw
-      - POSTGRES_USER=db_manager
-      - POSTGRES_DB=foodgram
+    image: postgres:13.10
+    env_file: .env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-
-  django:
+      - pg_data_new:/var/lib/postgresql/data
+  backend:
     build: ../backend/
     env_file: .env
+    # Тут подключаем volume к backend
     volumes:
-      - static_volume:/backend/collected_static
-      - media_volume:/backend/media
-    depends_on:
-      - db
-
+      - static_new:/backend_static
+      - media_new:/app/media
   frontend:
-    build: ../frontend/
-    command: cp -r /app/build/. /static/
     env_file: .env
+    build: ../frontend/
+    command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static_volume:/static
-
-  nginx:
+      - static_new:/frontend_static
+  gateway:
     build: ../nginx/
     env_file: .env
-    ports:
-      - "8000:80"
+    # А тут подключаем volume со статикой к gateway
     volumes:
-      - static_volume:/static/
-      - media_volume:/media/
-    depends_on:
-      - django
+      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_new:/static/
+      - media_new:/app/media
+    ports:
+      - 8000:80
