@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django.core.exceptions import ValidationError
 
 
 def name_validator(value):
@@ -31,7 +31,7 @@ class User(AbstractUser):
         'Имя', max_length=150
     )
     last_name = models.CharField(
-        'Фамилия', max_length=150 
+        'Фамилия', max_length=150
     )
     bio = models.TextField(
         'Био', blank=True, null=True
