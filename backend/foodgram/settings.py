@@ -173,3 +173,4 @@ DJOSER = {
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+CSRF_COOKIE_DOMAIN = 'foodygram.webhop.me'
