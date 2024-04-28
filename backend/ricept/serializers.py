@@ -6,8 +6,7 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from .models import Tag, Ingredient, Recipe, Ingredient_Recipe, Subscription
-
+from .models import Ingredient, Ingredient_Recipe, Recipe, Subscription, Tag
 
 User = get_user_model()
 
@@ -114,7 +113,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient_data in ingredients:
             ingredient_id = ingredient_data.get("id")
             try:
-                ingredient = Ingredient.objects.get(id=ingredient_id)
+                Ingredient.objects.get(id=ingredient_id)
             except Ingredient.DoesNotExist:
                 raise serializers.ValidationError(
                     {"ingredient": f"Ингр с ID {ingredient_id} не существует."}
@@ -143,7 +142,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         for tag_data in tags:
             tag_id = tag_data.id
             try:
-                tag = Tag.objects.get(id=tag_id)
+                Tag.objects.get(id=tag_id)
             except Tag.DoesNotExist:
                 raise serializers.ValidationError(
                     {"tag": f"Тэг с ID {tag_id} не существует."}
