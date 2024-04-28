@@ -149,7 +149,6 @@ jobs:
         source: "docker-compose.production.yml"
         target: "foodgram"
     - name: Executing remote ssh commands to deploy
-      needs: Copy docker-compose.yml via ssh
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
