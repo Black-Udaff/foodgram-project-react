@@ -172,4 +172,4 @@ DJOSER = {
 }
 
 
-CSRF_TRUSTED_ORIGINS = ['https://foodygram.webhop.me']
+# CSRF_TRUSTED_ORIGINS = ['https://foodygram.webhop.me']
