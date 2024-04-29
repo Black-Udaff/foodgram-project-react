@@ -1,2 +1,2 @@
 # praktikum_new_diplom
-ds213saddfdvfddfsdfgdasd
+ds213saddfdvfddfsdfgdasdsad
