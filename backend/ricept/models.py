@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from colorfield.fields import ColorField
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField("Имя", max_length=128, unique=True)
-    color = models.CharField(max_length=16, unique=True)
+    color = ColorField(default='#FF0000', unique=True)
     slug = models.SlugField("Слаг", max_length=25, unique=True)
 
     class Meta:
@@ -53,12 +54,16 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, through="Ingredient_Recipe", verbose_name="Ингредиент"
     )
-    tags = models.ManyToManyField(Tag, verbose_name="Ингредиент")
+    tags = models.ManyToManyField(Tag, verbose_name="тег")
     favorites = models.ManyToManyField(
         User, related_name="favorite_recipes", blank=True
     )
     shopping_cart = models.ManyToManyField(
         User, related_name="shoping_recipes", blank=True
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации рецепта',
+        auto_now_add=True,
     )
 
     class Meta:
@@ -87,8 +92,8 @@ class Ingredient_Recipe(models.Model):
     )
 
     class Meta:
-        verbose_name = "Связь жанра и произведения"
-        verbose_name_plural = "Связи жанров и произведений"
+        verbose_name = "Связь ингредиента и рецепта"
+        verbose_name_plural = "Связи ингредиентов и рецептов"
 
 
 class Subscription(models.Model):
@@ -96,17 +101,22 @@ class Subscription(models.Model):
         User,
         related_name="following",  # Пользователь, который подписывается
         on_delete=models.CASCADE,
+        verbose_name='Подписчик',
     )
     subscribed_to = models.ForeignKey(
         User,
         related_name="followers",  # Пользователь, на которого подписываются
         on_delete=models.CASCADE,
+        verbose_name='Автор',
     )
     created_at = models.DateTimeField(
         default=timezone.now
     )  # Дата и время создания подписки
 
     class Meta:
+        verbose_name = 'подписка'
+        verbose_name_plural = 'Подписки'
+
         unique_together = (
             "subscriber",
             "subscribed_to",
