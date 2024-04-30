@@ -12,8 +12,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", 'key')
 
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '* foodygram.webhop.me').split()
-
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '* foodygram.webhop.me').split()
+ALLOWED_HOSTS = ['foodygram.webhop.me', 'localhost', '127.0.0.1']
 
 # Application definition
 
