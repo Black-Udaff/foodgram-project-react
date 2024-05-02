@@ -1,6 +1,7 @@
 import csv
 
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -14,12 +15,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import Ingredient, Recipe, Subscription, Tag, User
+from .models import (Ingredient, Ingredient_Recipe, Recipe,
+                     Subscription, Tag, User)
 from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
                           SimplifiedRecipeSerializer, TagSerializer,
                           UserSubscriptionSerializer)
-
 User = get_user_model()
 
 
@@ -96,8 +97,7 @@ class RecipeViewSet(ModelViewSet):
                 return Response({'error': 'Recipe is not in your favorites'},
                                 status=status.HTTP_400_BAD_REQUEST)
             recipe.favorites.remove(request.user)
-            return Response({'status': 'recipe removed from favorites'},
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -125,8 +125,7 @@ class RecipeViewSet(ModelViewSet):
                 return Response({'error': 'Recipe not in shopping cart'},
                                 status=status.HTTP_400_BAD_REQUEST)
             recipe.shopping_cart.remove(request.user)
-            return Response({'status': 'Recipe removed from shopping cart'},
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='download_shopping_cart',
             permission_classes=[IsAuthenticated])
@@ -136,14 +135,24 @@ class RecipeViewSet(ModelViewSet):
             'attachment; filename="shopping_list.csv"')
 
         writer = csv.writer(response)
-        writer.writerow(['Recipe Name', 'Description', 'Cooking Time'])
+        writer.writerow(['Ingredient', 'Total Amount', 'Measurement Unit'])
 
         user = request.user
 
-        recipes = Recipe.objects.filter(shopping_cart=user)
+        ingredients = Ingredient_Recipe.objects.filter(
+            recipe__shopping_cart=user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(
+            total_amount=Sum('amount')
+        ).order_by('ingredient__name')
 
-        for recipe in recipes:
-            writer.writerow([recipe.name, recipe.text, recipe.cooking_time])
+        for ingredient in ingredients:
+            writer.writerow([
+                ingredient['ingredient__name'],
+                ingredient['total_amount'],
+                ingredient['ingredient__measurement_unit']
+            ])
 
         return response
 
@@ -192,11 +201,9 @@ class CustomUserViewSet(DjoserUserViewSet):
             target_user = get_object_or_404(User, pk=pk['id'])
             subscription = Subscription.objects.filter(
                 subscriber=request.user, subscribed_to=target_user).first()
-            print(subscription)
             if subscription:
                 subscription.delete()
-                return Response({'message': 'Unsubscription successful.'},
-                                status=status.HTTP_204_NO_CONTENT)
+                return Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response(
                     {'error': 'You are not subscribed to this user.'},

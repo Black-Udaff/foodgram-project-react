@@ -10,8 +10,11 @@ services:
     image: postgres:13
     env_file: .env
     volumes:
-      # - pg_data:/var/lib/postgresql/data
-      - ./jopa/:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
+      # - ./jopa/:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
   backend:
     build: ./backend/
     env_file: .env
@@ -29,6 +32,6 @@ services:
     env_file: .env
     volumes:
       - static:/static/
-      - media:/app/media
+      - media:/media
     ports:
       - 6555:80

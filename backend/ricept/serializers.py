@@ -102,7 +102,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ["favorites", "shopping_cart"]
+        exclude = ["favorites", "shopping_cart", "pub_date"]
 
     def validate_ingredients(self, ingredients):
         if not ingredients:
