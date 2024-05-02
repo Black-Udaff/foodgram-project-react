@@ -21,6 +21,7 @@ from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
                           SimplifiedRecipeSerializer, TagSerializer,
                           UserSubscriptionSerializer)
+
 User = get_user_model()
 
 
