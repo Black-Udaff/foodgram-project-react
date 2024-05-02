@@ -1,6 +1,6 @@
 ## Проект Foodgram
 
-![Статус основного процесса работы Foodgram](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
+[![Main Foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
 
 Foodgram — это кулинарный помощник, который предлагает обширную базу данных рецептов. Это место, где вы можете публиковать свои рецепты, сохранять любимые и формировать список покупок для выбранных блюд. Также доступна функция подписки на авторов, чьи рецепты вам особенно нравятся.
 
