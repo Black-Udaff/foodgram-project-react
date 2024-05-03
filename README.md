@@ -70,7 +70,7 @@ DB_PORT=5432
 ```
 
 ```
-scp docker-compose.production.yml .env username@IP:/home/username/   # username - имя пользователя на сервере
+scp docker-compose.production.yml .env username@IP:/home/username/foodgram/   # username - имя пользователя на сервере
                                                                 # IP - публичный IP сервера
 ```
 
