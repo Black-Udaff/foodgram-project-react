@@ -119,7 +119,6 @@ class RecipeViewSet(ModelViewSet):
                 return Response({'error': 'Recipe not found'},
                                 status=status.HTTP_404_NOT_FOUND)
             if not recipe.shopping_cart.filter(id=request.user.id).exists():
-                # Возвращает 400, если рецепт не был в корзине
                 return Response({'error': 'Recipe not in shopping cart'},
                                 status=status.HTTP_400_BAD_REQUEST)
             recipe.shopping_cart.remove(request.user)
