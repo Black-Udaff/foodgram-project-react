@@ -91,27 +91,33 @@ TELEGRAM_TOKEN          # токен бота, посылающего сообщ
 5. Создать и запустить контейнеры Docker, выполнить команду на сервере
 *(версии команд "docker compose" или "docker-compose" отличаются в зависимости от установленной версии Docker Compose):*
 ```
-sudo docker compose -f docker-compose.production.ym up -d(предварительно нужно собрать все докер образы локально и запушить на Docker Hub или просто запушить проект на Git Hub )
+sudo docker-compose -f docker-compose.production.ym up -d(предварительно нужно собрать все докер образы локально и запушить на Docker Hub или просто запушить проект на Git Hub )
 ```
 
 - После успешной сборки выполнить миграции:
 ```
-sudo docker compose exec backend python manage.py migrate
+sudo docker-compose exec backend python manage.py migrate
 ```
 
 - Создать суперпользователя:
 ```
-sudo docker compose exec backend python manage.py createsuperuser
+sudo docker-compose exec backend python manage.py createsuperuser
 ```
 
 - Собрать статику:
 ```
-sudo docker compose exec backend python manage.py collectstatic
+sudo docker-compose exec backend python manage.py collectstatic
+```
+- Скопировать статику:
+```
+
+sudo docker-compose exec backend cp -r /app/collected_static/. /backend_static/static/
 ```
 
 - Наполнить базу данных содержимым из файла ingredients.json:
 ```
-sudo docker compose exec backend python manage.py import_data data/ingredients.json
+
+sudo docker-compose exec backend python manage.py import_data data/ingredients.json
 ```
 
 - Для остановки контейнеров Docker:
@@ -136,9 +142,9 @@ https://github.com/Black-Udaff/foodgram-project-react.git
 
 2. В корне создать файл .env и заполнить своими данными :
 ```
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+POSTGRES_USER=django_user
+POSTGRES_PASSWORD=mysecretpassword
+POSTGRES_DB=django
 DB_HOST=db
 DB_PORT=5432
 SECRET_KEY='секретный ключ Django'
