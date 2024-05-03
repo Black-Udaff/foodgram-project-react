@@ -83,7 +83,6 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", 5432),
     }
 }
-print("DB_HOST:", os.getenv('DB_HOST', '127.0.0.1'))
 
 
 AUTH_PASSWORD_VALIDATORS = [
