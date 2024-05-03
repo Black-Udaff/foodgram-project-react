@@ -1,4 +1,4 @@
-[![Main foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
+[![Main foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
 
 ## Для ревью
 ```
@@ -131,7 +131,7 @@ sudo docker compose stop         # без удаления
 
 1. Клонировать репозиторий:
 ```
-https://github.com/mikhailsoldatkin/foodgram-project-react.git
+https://github.com/Black-Udaff/foodgram-project-react.git
 ```
 
 2. В корне создать файл .env и заполнить своими данными :
