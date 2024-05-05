@@ -66,6 +66,9 @@ POSTGRES_PASSWORD=mysecretpassword
 POSTGRES_DB=django
 DB_HOST=db
 DB_PORT=5432
+SECRET_KEY='секретный ключ Django'
+DEBUG=True
+ALLOWED_HOSTS='localhost 127.0.0.1'
 
 ```
 
@@ -148,6 +151,8 @@ POSTGRES_DB=django
 DB_HOST=db
 DB_PORT=5432
 SECRET_KEY='секретный ключ Django'
+DEBUG=True
+ALLOWED_HOSTS='localhost 127.0.0.1'
 ```
 
 3. Создать и запустить контейнеры Docker, последовательно выполнить команды по созданию миграций, сбору статики, 
