@@ -1,4 +1,4 @@
-[![Main foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
+[![Main foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
 
 ## Для ревью
 ```
@@ -15,10 +15,10 @@
 Foodgram — это кулинарный помощник, который предлагает обширную базу данных рецептов. Это место, где вы можете публиковать свои рецепты, сохранять любимые и формировать список покупок для выбранных блюд. Также доступна функция подписки на авторов, чьи рецепты вам особенно нравятся.
 
 ### Адрес проекта
-Проект доступен для доступа по [ссылке] (https://foodygram.webhop.me/).
+Проект доступен для доступа по [ссылке](https://foodygram.webhop.me/).
 
 ### Документация API
-Ознакомиться с документацией API, где подробно описаны возможные запросы и структура ответов, можно [здесь] (https://foodygram.webhop.me/api/docs/).
+Ознакомиться с документацией API, где подробно описаны возможные запросы и структура ответов, можно [здесь](https://foodygram.webhop.me/api/docs/).
 
 
 ### Функции сервиса:
@@ -70,7 +70,7 @@ DB_PORT=5432
 ```
 
 ```
-scp docker-compose.production.yml .env username@IP:/home/username/   # username - имя пользователя на сервере
+scp docker-compose.production.yml .env username@IP:/home/username/foodgram/   # username - имя пользователя на сервере
                                                                 # IP - публичный IP сервера
 ```
 
@@ -91,27 +91,33 @@ TELEGRAM_TOKEN          # токен бота, посылающего сообщ
 5. Создать и запустить контейнеры Docker, выполнить команду на сервере
 *(версии команд "docker compose" или "docker-compose" отличаются в зависимости от установленной версии Docker Compose):*
 ```
-sudo docker compose -f docker-compose.production.ym up -d(предварительно нужно собрать все докер образы локально и запушить на Docker Hub или просто запушить проект на Git Hub )
+sudo docker-compose -f docker-compose.production.ym up -d(предварительно нужно собрать все докер образы локально и запушить на Docker Hub или просто запушить проект на Git Hub )
 ```
 
 - После успешной сборки выполнить миграции:
 ```
-sudo docker compose exec backend python manage.py migrate
+sudo docker-compose exec backend python manage.py migrate
 ```
 
 - Создать суперпользователя:
 ```
-sudo docker compose exec backend python manage.py createsuperuser
+sudo docker-compose exec backend python manage.py createsuperuser
 ```
 
 - Собрать статику:
 ```
-sudo docker compose exec backend python manage.py collectstatic
+sudo docker-compose exec backend python manage.py collectstatic
+```
+- Скопировать статику:
+```
+
+sudo docker-compose exec backend cp -r /app/collected_static/. /backend_static/static/
 ```
 
 - Наполнить базу данных содержимым из файла ingredients.json:
 ```
-sudo docker compose exec backend python manage.py import_data data/ingredients.json
+
+sudo docker-compose exec backend python manage.py import_data data/ingredients.json
 ```
 
 - Для остановки контейнеров Docker:
@@ -131,14 +137,14 @@ sudo docker compose stop         # без удаления
 
 1. Клонировать репозиторий:
 ```
-https://github.com/mikhailsoldatkin/foodgram-project-react.git
+https://github.com/Black-Udaff/foodgram-project-react.git
 ```
 
 2. В корне создать файл .env и заполнить своими данными :
 ```
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+POSTGRES_USER=django_user
+POSTGRES_PASSWORD=mysecretpassword
+POSTGRES_DB=django
 DB_HOST=db
 DB_PORT=5432
 SECRET_KEY='секретный ключ Django'
