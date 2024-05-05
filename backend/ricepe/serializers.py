@@ -1,25 +1,12 @@
-import base64
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from .models import Ingredient, Ingredient_Recipe, Recipe, Subscription, Tag
+from .models import Ingredient, IngredientRecipe, Recipe, Subscription, Tag
+from .fields import Base64ImageField
 
 User = get_user_model()
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith("data:image"):
-            format, imgstr = data.split(";base64,")
-            ext = format.split("/")[-1]
-
-            data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
-
-        return super().to_internal_value(data)
 
 
 class SimplifiedRecipeSerializer(serializers.ModelSerializer):
@@ -59,7 +46,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source="ingredient.id", read_only=True)
 
     class Meta:
-        model = Ingredient_Recipe
+        model = IngredientRecipe
         fields = ("id", "name", "measurement_unit", "amount")
 
 
@@ -103,6 +90,17 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         exclude = ["favorites", "shopping_cart", "pub_date"]
+
+    def validate(self, data):
+        request = self.context.get("request")
+        if request and request.method == 'PATCH':
+            if "tags" not in data:
+                raise serializers.ValidationError(
+                    {"tags": "Это поле обязательно для обновления."})
+            if "ingredients" not in data:
+                raise serializers.ValidationError(
+                    {"ingredients": "Это поле обязательно для обновления."})
+        return super().validate(data)
 
     def validate_ingredients(self, ingredients):
         if not ingredients:
@@ -167,7 +165,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             instance.tags.all(), many=True
         ).data
 
-        ingredients = instance.recipe.all()
+        ingredients = instance.recipes.all()
         representation["ingredients"] = IngredientRecipeSerializer(
             ingredients, many=True
         ).data
@@ -192,13 +190,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
 
-        for ingredient_data in ingredients_data:
-            print(ingredient_data)
-            Ingredient_Recipe.objects.create(
+        ingredient_recipes = [
+            IngredientRecipe(
                 recipe=recipe,
                 ingredient_id=ingredient_data["id"],
-                amount=ingredient_data["amount"],
-            )
+                amount=ingredient_data["amount"]
+            ) for ingredient_data in ingredients_data
+        ]
+
+        IngredientRecipe.objects.bulk_create(ingredient_recipes)
 
         return recipe
 
@@ -217,20 +217,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop("tags", [])
         ingredients_data = validated_data.pop("ingredients", [])
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
 
         if tags_data:
             instance.tags.set(tags_data)
 
-        instance.recipe.all().delete()
-        for ingredient_data in ingredients_data:
-            Ingredient_Recipe.objects.create(
+        instance.recipes.all().delete()
+        ingredient_recipes = [
+            IngredientRecipe(
                 recipe=instance,
                 ingredient_id=ingredient_data["id"],
-                amount=ingredient_data["amount"],
-            )
+                amount=ingredient_data["amount"]
+            ) for ingredient_data in ingredients_data
+        ]
+
+        IngredientRecipe.objects.bulk_create(ingredient_recipes)
 
         return instance
 

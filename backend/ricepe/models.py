@@ -38,7 +38,7 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(
         "Время готовки",
         validators=[
-            MinValueValidator(1, message="ололо"),
+            MinValueValidator(1, message="Время больше или равно едице"),
         ],
     )
     author = models.ForeignKey(
@@ -52,7 +52,7 @@ class Recipe(models.Model):
                               null=True,
                               default=None)
     ingredients = models.ManyToManyField(
-        Ingredient, through="Ingredient_Recipe", verbose_name="Ингредиент"
+        Ingredient, through="IngredientRecipe", verbose_name="Ингредиент"
     )
     tags = models.ManyToManyField(Tag, verbose_name="тег")
     favorites = models.ManyToManyField(
@@ -67,6 +67,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
+        ordering = ['-pub_date']
         verbose_name = "рецепт"
         verbose_name_plural = "Рецепты"
 
@@ -74,17 +75,17 @@ class Recipe(models.Model):
         return self.name
 
 
-class Ingredient_Recipe(models.Model):
+class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name="recipe",
+        related_name="recipes",
         verbose_name="Рецепт",
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name="ingredient",
+        related_name="ingredients",
         verbose_name="Ингредиент",
     )
     amount = models.PositiveIntegerField(
@@ -92,6 +93,10 @@ class Ingredient_Recipe(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['recipe', 'ingredient'],
+                                    name='unique_ingredient_recipe')
+        ]
         verbose_name = "Связь ингредиента и рецепта"
         verbose_name_plural = "Связи ингредиентов и рецептов"
 
@@ -111,16 +116,16 @@ class Subscription(models.Model):
     )
     created_at = models.DateTimeField(
         default=timezone.now
-    )  # Дата и время создания подписки
+    )
 
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
 
-        unique_together = (
-            "subscriber",
-            "subscribed_to",
-        )  # Гарантируем уникальность подписок
+        constraints = [
+            models.UniqueConstraint(fields=['subscriber', 'subscribed_to'],
+                                    name='unique_subscription')
+        ]
         indexes = [
             models.Index(
                 fields=["subscriber", "subscribed_to"], name="subscription_idx"

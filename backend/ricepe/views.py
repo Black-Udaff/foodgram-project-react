@@ -14,7 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import (Ingredient, Ingredient_Recipe, Recipe,
+from .models import (Ingredient, IngredientRecipe, Recipe,
                      Subscription, Tag, User)
 from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
@@ -50,16 +50,6 @@ class RecipeViewSet(ModelViewSet):
         'delete',
     ]
     permission_classes = [CurrentUserOrAdminOrReadOnly]
-    # permission_classes = (IsAuthor | IsModerator | IsAdmin,)
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        filterset = self.filterset_class(data=self.request.GET,
-                                         queryset=queryset,
-                                         request=self.request)
-        if filterset.is_valid():
-            queryset = filterset.qs
-        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user,)
@@ -67,63 +57,48 @@ class RecipeViewSet(ModelViewSet):
     def get_serializer_context(self):
 
         context = super().get_serializer_context()
-        # Добавляем текущего пользователя в контекст
         context['user'] = self.request.user
         print(context['user'])
         return context
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk=None):
+    def handle_recipe_list_toggle(self, request, pk, list_type):
         recipe = Recipe.objects.filter(pk=pk).first()
+
         if request.method == 'POST':
             if not recipe:
                 return Response({'error': 'Recipe not found'},
                                 status=status.HTTP_400_BAD_REQUEST)
-            if recipe.favorites.filter(id=request.user.id).exists():
-                return Response({'error': 'This recipe is already in list'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            recipe.favorites.add(request.user)
+            user_list = getattr(recipe, list_type)
+            if user_list.filter(id=request.user.id).exists():
+                return Response(
+                    {'error': f'This recipe is already in {list_type}'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            user_list.add(request.user)
             serializer = SimplifiedRecipeSerializer(
                 recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
+
+        else:
             if not recipe:
                 return Response({'error': 'Recipe not found'},
                                 status=status.HTTP_404_NOT_FOUND)
-            if not recipe.favorites.filter(id=request.user.id).exists():
-                return Response({'error': 'Recipe is not in your favorites'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            recipe.favorites.remove(request.user)
+            user_list = getattr(recipe, list_type)
+            if not user_list.filter(id=request.user.id).exists():
+                return Response(
+                    {'error': f'Recipe is not in your {list_type}'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            user_list.remove(request.user)
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=[IsAuthenticated])
+    def favorite(self, request, pk=None):
+        return self.handle_recipe_list_toggle(request, pk, 'favorites')
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        recipe = Recipe.objects.filter(pk=pk).first()
-
-        if request.method == 'POST':
-            if not recipe:
-                return Response({'error': 'Recipe not found'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            if recipe.shopping_cart.filter(id=request.user.id).exists():
-                return Response({'error': 'This recipe is already in list'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            recipe.shopping_cart.add(request.user)
-            serializer = SimplifiedRecipeSerializer(
-                recipe, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        elif request.method == 'DELETE':
-            if not recipe:
-                return Response({'error': 'Recipe not found'},
-                                status=status.HTTP_404_NOT_FOUND)
-            if not recipe.shopping_cart.filter(id=request.user.id).exists():
-                # Возвращает 400, если рецепт не был в корзине
-                return Response({'error': 'Recipe not in shopping cart'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            recipe.shopping_cart.remove(request.user)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.handle_recipe_list_toggle(request, pk, 'shopping_cart')
 
     @action(detail=False, methods=['get'], url_path='download_shopping_cart',
             permission_classes=[IsAuthenticated])
@@ -137,7 +112,7 @@ class RecipeViewSet(ModelViewSet):
 
         user = request.user
 
-        ingredients = Ingredient_Recipe.objects.filter(
+        ingredients = IngredientRecipe.objects.filter(
             recipe__shopping_cart=user
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
@@ -191,7 +166,7 @@ class CustomUserViewSet(DjoserUserViewSet):
                 target_user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
+        else:
             if request.user.id == int(pk['id']):
                 return Response({'error': 'You cannot unsubscribe from self.'},
                                 status=status.HTTP_400_BAD_REQUEST)

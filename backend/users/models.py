@@ -10,10 +10,6 @@ def name_validator(value):
 
 
 class User(AbstractUser):
-    class Role(models.TextChoices):
-        USER = 'user', 'User'
-        ADMIN = 'admin', 'Admin'
-        MODERATOR = 'moderator', 'Moderator'
 
     username = models.CharField(
         'Юзернейм',
@@ -35,9 +31,6 @@ class User(AbstractUser):
     )
     bio = models.TextField(
         'Био', blank=True, null=True
-    )
-    role = models.CharField(
-        'Роль', choices=Role.choices, default=Role.USER, max_length=10
     )
 
     @property

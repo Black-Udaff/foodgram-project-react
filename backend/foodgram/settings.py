@@ -9,14 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", 'key')
-
+print(SECRET_KEY)
 DEBUG = True
 
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '* foodygram.webhop.me').split()
-ALLOWED_HOSTS = ['foodygram.webhop.me', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
 
-# Application definition
-
+print(ALLOWED_HOSTS)
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,7 +28,7 @@ INSTALLED_APPS = [
     'djoser',
     'users',
     "corsheaders",
-    'ricept',
+    'ricepe',
     'colorfield',
 ]
 
@@ -75,8 +73,6 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # }
 DATABASES = {
     "default": {
-        # Меняем настройку Django: теперь для работы будет использоваться
-        # бэкенд postgresql
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "django"),
         "USER": os.getenv("POSTGRES_USER", "django_user"),
@@ -85,7 +81,7 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", 5432),
     }
 }
-print("DB_HOST:", os.getenv('DB_HOST', '127.0.0.1'))
+print(DATABASES['default'])
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -104,9 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'Europe/Moscow'
@@ -116,17 +109,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -143,7 +131,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'ricept.pagination.CustomPagination',
+    'DEFAULT_PAGINATION_CLASS': 'ricepe.pagination.CustomPagination',
 
     'PAGE_SIZE': 6,
 
@@ -160,8 +148,8 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'users.serializers.CustomUserCreateSerializer',
-        'user': 'ricept.serializers.UserSerializer',
-        'current_user': 'ricept.serializers.UserSerializer',
+        'user': 'ricepe.serializers.UserSerializer',
+        'current_user': 'ricepe.serializers.UserSerializer',
     },
 
     'PERMISSIONS': {
