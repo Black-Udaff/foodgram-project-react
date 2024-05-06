@@ -58,7 +58,6 @@ class RecipeViewSet(ModelViewSet):
 
         context = super().get_serializer_context()
         context['user'] = self.request.user
-        print(context['user'])
         return context
 
     def handle_recipe_list_toggle(self, request, pk, list_type):
@@ -78,17 +77,16 @@ class RecipeViewSet(ModelViewSet):
                 recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            if not recipe:
-                return Response({'error': 'Recipe not found'},
-                                status=status.HTTP_404_NOT_FOUND)
-            user_list = getattr(recipe, list_type)
-            if not user_list.filter(id=request.user.id).exists():
-                return Response(
-                    {'error': f'Recipe is not in your {list_type}'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            user_list.remove(request.user)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        if not recipe:
+            return Response({'error': 'Recipe not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        user_list = getattr(recipe, list_type)
+        if not user_list.filter(id=request.user.id).exists():
+            return Response(
+                {'error': f'Recipe is not in your {list_type}'},
+                status=status.HTTP_400_BAD_REQUEST)
+        user_list.remove(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -166,21 +164,20 @@ class CustomUserViewSet(DjoserUserViewSet):
                 target_user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            if request.user.id == int(pk['id']):
-                return Response({'error': 'You cannot unsubscribe from self.'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if request.user.id == int(pk['id']):
+            return Response({'error': 'You cannot unsubscribe from self.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            target_user = get_object_or_404(User, pk=pk['id'])
-            subscription = Subscription.objects.filter(
-                subscriber=request.user, subscribed_to=target_user).first()
-            if subscription:
-                subscription.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(
-                    {'error': 'You are not subscribed to this user.'},
-                    status=status.HTTP_400_BAD_REQUEST)
+        target_user = get_object_or_404(User, pk=pk['id'])
+        subscription = Subscription.objects.filter(
+            subscriber=request.user, subscribed_to=target_user).first()
+        if subscription:
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {'error': 'You are not subscribed to this user.'},
+            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='subscriptions',
             permission_classes=[IsAuthenticated])

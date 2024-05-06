@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", 'key')
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
 
@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'djoser',
     'users',
     "corsheaders",
-    'ricepe',
+    'recipe',
     'colorfield',
 ]
 
@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'ricepe.pagination.CustomPagination',
+    'DEFAULT_PAGINATION_CLASS': 'recipe.pagination.CustomPagination',
 
     'PAGE_SIZE': 6,
 
@@ -146,8 +146,8 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'users.serializers.CustomUserCreateSerializer',
-        'user': 'ricepe.serializers.UserSerializer',
-        'current_user': 'ricepe.serializers.UserSerializer',
+        'user': 'recipe.serializers.UserSerializer',
+        'current_user': 'recipe.serializers.UserSerializer',
     },
 
     'PERMISSIONS': {

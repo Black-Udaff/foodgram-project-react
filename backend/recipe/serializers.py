@@ -3,9 +3,9 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from .models import Ingredient, IngredientRecipe, Recipe, Subscription, Tag
+from .models import Ingredient, IngredientRecipe, Recipe, Tag
 from .fields import Base64ImageField
-
+from .mixins import IsSubscribedMixin
 User = get_user_model()
 
 
@@ -50,7 +50,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "measurement_unit", "amount")
 
 
-class UserSerializer(UserSerializer):
+class UserSerializer(UserSerializer, IsSubscribedMixin):
 
     is_subscribed = serializers.SerializerMethodField()
 
@@ -64,14 +64,6 @@ class UserSerializer(UserSerializer):
             "last_name",
             "is_subscribed",
         )
-
-    def get_is_subscribed(self, obj):
-        user = self.context["request"].user
-        if user.is_authenticated:
-            return Subscription.objects.filter(
-                subscriber=user, subscribed_to=obj
-            ).exists()
-        return False
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -184,44 +176,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             return obj.shopping_cart.filter(id=user.id).exists()
         return False
 
-    def create(self, validated_data):
-        tags_data = validated_data.pop("tags", [])
-        ingredients_data = validated_data.pop("ingredients", [])
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags_data)
-
-        ingredient_recipes = [
-            IngredientRecipe(
-                recipe=recipe,
-                ingredient_id=ingredient_data["id"],
-                amount=ingredient_data["amount"]
-            ) for ingredient_data in ingredients_data
-        ]
-
-        IngredientRecipe.objects.bulk_create(ingredient_recipes)
-
-        return recipe
-
-    def update(self, instance, validated_data):
-        request = self.context.get("request")
-
-        if request and request.method == "PATCH":
-            if "tags" not in validated_data:
-                raise serializers.ValidationError(
-                    {"tags": "Это поле обязательно для обновления."}
-                )
-            if "ingredients" not in validated_data:
-                raise serializers.ValidationError(
-                    {"ingredients": "Это поле обязательно для обновления."}
-                )
-        tags_data = validated_data.pop("tags", [])
-        ingredients_data = validated_data.pop("ingredients", [])
-
-        instance = super().update(instance, validated_data)
-
-        if tags_data:
-            instance.tags.set(tags_data)
-
+    def process_ingredients(self, instance, ingredients_data):
         instance.recipes.all().delete()
         ingredient_recipes = [
             IngredientRecipe(
@@ -230,13 +185,29 @@ class RecipeSerializer(serializers.ModelSerializer):
                 amount=ingredient_data["amount"]
             ) for ingredient_data in ingredients_data
         ]
-
         IngredientRecipe.objects.bulk_create(ingredient_recipes)
 
+    def create(self, validated_data):
+        tags_data = validated_data.pop("tags", [])
+        ingredients_data = validated_data.pop("ingredients", [])
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags_data)
+        self.process_ingredients(recipe, ingredients_data)
+        return recipe
+
+    def update(self, instance, validated_data):
+        tags_data = validated_data.pop("tags", [])
+        ingredients_data = validated_data.pop("ingredients", [])
+        instance = super().update(instance, validated_data)
+        if tags_data:
+            instance.tags.set(tags_data)
+        instance.recipes.all().delete()
+        self.process_ingredients(instance, ingredients_data)
         return instance
 
 
-class UserSubscriptionSerializer(serializers.ModelSerializer):
+class UserSubscriptionSerializer(serializers.ModelSerializer,
+                                 IsSubscribedMixin):
     recipes = SimplifiedRecipeSerializer(many=True, read_only=True)
     recipes_count = serializers.IntegerField(
         source="recipes.count",
@@ -256,14 +227,6 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             "recipes",
             "recipes_count",
         ]
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            return Subscription.objects.filter(
-                subscriber=request.user, subscribed_to=obj
-            ).exists()
-        return False
 
     def to_representation(self, instance):
         representation = super(

@@ -38,7 +38,7 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(
         "Время готовки",
         validators=[
-            MinValueValidator(1, message="Время больше или равно едице"),
+            MinValueValidator(1, message="Время больше или равно единице"),
         ],
     )
     author = models.ForeignKey(
