@@ -6,6 +6,7 @@ from rest_framework.relations import SlugRelatedField
 from .models import Ingredient, IngredientRecipe, Recipe, Tag
 from .fields import Base64ImageField
 from .mixins import IsSubscribedMixin
+
 User = get_user_model()
 
 
