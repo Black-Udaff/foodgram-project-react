@@ -139,13 +139,11 @@ class CustomUserViewSet(DjoserUserViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['user'] = self.request.user
-        print(context['user'])
         return context
 
     @action(detail=True, methods=['post', 'delete'], url_path='subscribe',
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, *args, **pk):
-        print(pk)
         if request.method == 'POST':
             if request.user.id == int(pk['id']):
                 return Response({'error': 'You cannot subscribe to self.'},

@@ -7,6 +7,5 @@ User = get_user_model()
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    fieldsets = (
-        ('Extra Fields', {'fields': ('bio', 'role',)}),
-    )
+    search_fields = ['username', 'email']
+    list_filter = ['username', 'email']

@@ -20,6 +20,7 @@ class TagAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'measurement_unit')
     search_fields = ('name',)
+    list_filter = ('name',)
 
 
 class RecipeIngredientsInLine(admin.TabularInline):
@@ -35,6 +36,12 @@ class RecipeTagsInLine(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'text', 'pub_date', 'author')
-    search_fields = ('name', 'author')
+    search_fields = ('name', 'author__username', 'tags__name')
     inlines = (RecipeIngredientsInLine, RecipeTagsInLine)
     exclude = ('tags',)
+    list_filter = ('name', 'author__username', 'tags__name')
+
+    def get_favorite_count(self, obj):
+        return obj.subscriptions.count()
+
+    get_favorite_count.short_description = 'Favorites'

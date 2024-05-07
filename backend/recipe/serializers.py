@@ -202,7 +202,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         if tags_data:
             instance.tags.set(tags_data)
-        instance.recipes.all().delete()
         self.process_ingredients(instance, ingredients_data)
         return instance
 
