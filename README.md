@@ -1,13 +1,5 @@
 [![Main foodgram workflow](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/Black-Udaff/foodgram-project-react/actions/workflows/main.yml)
 
-## Для ревью
-```
-Адрес: https://foodygram.webhop.me/
-
-Админка: admin eqhn8eto
-
-```
-
 
 
 ## Проект Foodgram
